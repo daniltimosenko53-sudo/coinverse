@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>COINVERSE</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#0c0d12;--panel:#171922;--gold:#ffc94a;--muted:#858897;--line:#292c37}
+body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif;padding-bottom:90px}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{max-width:520px;margin:auto;padding:18px}
+.top{display:flex;align-items:center;justify-content:space-between;margin:8px 0 25px}
+.logo{font-size:23px;font-weight:900;letter-spacing:2px}
+.logo span{color:var(--gold)}
+.status{font-size:11px;color:#e6b84c;background:#302718;padding:8px 11px;border-radius:20px}
+.balance-card{background:linear-gradient(140deg,#29251b,#171922 70%);border:1px solid #51432b;border-radius:20px;padding:20px}
+.muted{color:var(--muted);font-size:13px}
+.balance{font-size:35px;font-weight:800;margin:8px 0}
+.coin-small{color:var(--gold)}
+.coin-area{display:flex;justify-content:center;align-items:center;padding:35px 0 25px}
+.coin{width:210px;height:210px;border-radius:50%;border:7px solid #e6a92e;background:radial-gradient(circle at 35% 25%,#fff0a4 0%,#ffd45b 20%,#e6a42d 55%,#9b5c12 100%);box-shadow:0 0 35px #e8a72b40,inset 0 0 0 5px #ffec9a,inset 0 -9px 15px #79410b;display:flex;align-items:center;justify-content:center;color:#17120a;font-size:90px;font-weight:900;transition:transform .08s}
+.coin:active{transform:scale(.94)}
+.hint{text-align:center;color:var(--muted);font-size:13px;margin-top:-10px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+.stat{background:var(--panel);border:1px solid var(--line);padding:16px;border-radius:15px}
+.stat strong{display:block;font-size:20px;margin-top:7px}
+.section{display:none}
+.section.active{display:block}
+.heading{font-size:22px;font-weight:800;margin:22px 0 16px}
+.panel{background:var(--panel);border:1px solid var(--line);padding:16px;border-radius:16px;margin-bottom:12px}
+.upgrade{display:flex;align-items:center;gap:12px}
+.upgrade-icon{width:46px;height:46px;border-radius:13px;background:#332b1c;display:grid;place-items:center;font-size:23px}
+.upgrade-info{flex:1}
+.upgrade-info strong{display:block;margin-bottom:5px}
+.buy{background:var(--gold);border:0;color:#241900;padding:11px 13px;border-radius:10px;font-weight:800}
+.buy:disabled{opacity:.4}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#14151d;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 3px calc(10px + env(safe-area-inset-bottom));z-index:5}
+.nav button{background:none;border:0;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:50px}
+.nav button span{font-size:21px}
+.nav button.active{color:var(--gold)}
+.search{width:100%;background:#101118;color:white;border:1px solid var(--line);padding:15px;border-radius:12px;outline:none}
+.action{width:100%;padding:14px;border:0;border-radius:12px;background:var(--gold);color:#211800;font-weight:800;margin-top:12px}
+.empty{text-align:center;color:var(--muted);padding:30px 12px;line-height:1.6}
+.avatar{width:65px;height:65px;border-radius:50%;background:#332b1c;display:grid;place-items:center;font-size:28px;border:2px solid #a77b2b}
+.profile-head{display:flex;align-items:center;gap:15px}
+.profile-name{font-size:20px;font-weight:bold}
+.message{background:#252835;padding:12px;border-radius:13px;margin:8px 0;color:#b6bac7;font-size:13px}
+.notice{font-size:12px;color:#d2aa51;line-height:1.5;margin-top:14px}
+.footer{text-align:center;color:#555968;font-size:11px;margin:25px 0}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="logo">COIN<span>VERSE</span></div>
+  <div class="status" id="connection">ПРЕДПРОСМОТР</div>
+</header>
+
+<section id="home" class="section active">
+  <div class="balance-card">
+    <div class="muted">ТВОЙ БАЛАНС</div>
+    <div class="balance"><span id="balance">0</span> <span class="coin-small">●</span></div>
+    <div class="muted">Игровые монеты COINVERSE</div>
+  </div>
+  <div class="coin-area">
+    <button class="coin" id="coin" aria-label="Нажать на монету">C</button>
+  </div>
+  <div class="hint">Нажимай на монету, чтобы зарабатывать</div>
+  <div class="stats">
+    <div class="stat"><div class="muted">ЗА КЛИК</div><strong id="power">+1</strong></div>
+    <div class="stat"><div class="muted">ВСЕГО КЛИКОВ</div><strong id="clicks">0</strong></div>
+  </div>
+  <div class="heading">Улучшения</div>
+  <div class="panel upgrade">
+    <div class="upgrade-icon">⚡</div>
+    <div class="upgrade-info">
+      <strong>Сильный клик</strong>
+      <div class="muted">Увеличивает награду за нажатие</div>
+      <div class="muted" id="upgradeLevel">Уровень: 0</div>
+    </div>
+    <button class="buy" id="buy">100 ●</button>
+  </div>
+  <div class="notice">Демонстрационный режим: баланс и улучшения пока не сохраняются на сервере.</div>
+</section>
+
+<section id="leaders" class="section">
+  <div class="heading">🏆 Лидеры</div>
+  <div class="panel empty">Здесь появится настоящий рейтинг игроков COINVERSE.<br><br>Для загрузки рейтинга подключим серверную базу данных.</div>
+</section>
+
+<section id="search" class="section">
+  <div class="heading">🔎 Поиск игроков</div>
+  <div class="panel">
+    <input class="search" id="searchInput" placeholder="Введите Telegram username">
+    <button class="action" id="searchButton">Найти игрока</button>
+    <div id="searchResult" class="empty">Ищи игроков, зарегистрированных в COINVERSE.</div>
+  </div>
+</section>
+
+<section id="chat" class="section">
+  <div class="heading">💬 Сообщения</div>
+  <div class="panel empty">
+    Внутренний чат COINVERSE<br><br>
+    Здесь будут личные переписки между игроками.<br><br>
+    <span class="muted">Чат подключим к серверу на следующем этапе.</span>
+  </div>
+</section>
+
+<section id="profile" class="section">
+  <div class="heading">👤 Мой профиль</div>
+  <div class="panel">
+    <div class="profile-head">
+      <div class="avatar" id="avatar">👤</div>
+      <div>
+        <div class="profile-name" id="playerName">Игрок COINVERSE</div>
+        <div class="muted" id="playerUsername">@username</div>
+      </div>
+    </div>
+    <div class="notice">Профиль пока отображает данные Telegram, если Mini App открыт через бота. Серверная регистрация будет добавлена отдельно.</div>
+  </div>
+  <div class="panel">
+    <div class="muted">БАЛАНС</div>
+    <div class="balance"><span id="profileBalance">0</span> ●</div>
+    <div class="muted">Монеты COINVERSE</div>
+  </div>
+</section>
+<div class="footer">COINVERSE · Игровая экономика</div>
+</div>
+
+<nav class="nav">
+  <button class="active" data-page="home"><span>🪙</span>Главная</button>
+  <button data-page="leaders"><span>🏆</span>Лидеры</button>
+  <button data-page="search"><span>🔎</span>Поиск</button>
+  <button data-page="chat"><span>💬</span>Чат</button>
+  <button data-page="profile"><span>👤</span>Профиль</button>
+</nav>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if(tg){
+  tg.ready();
+  tg.expand();
+  if(tg.initDataUnsafe?.user){
+    const user=tg.initDataUnsafe.user;
+    document.getElementById('playerName').textContent=
+      [user.first_name,user.last_name].filter(Boolean).join(' ') || 'Игрок COINVERSE';
+    document.getElementById('playerUsername').textContent=
+      user.username ? '@'+user.username : 'Username не указан';
+    if(user.photo_url){
+      document.getElementById('avatar').innerHTML=
+        '<img src="'+user.photo_url+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">';
+    }
+    document.getElementById('connection').textContent='TELEGRAM';
+  }
+}
+
+let balance=0;
+let clicks=0;
+let power=1;
+let level=0;
+let cost=100;
+
+const balanceEl=document.getElementById('balance');
+const clicksEl=document.getElementById('clicks');
+const powerEl=document.getElementById('power');
+const profileBalance=document.getElementById('profileBalance');
+
+function update(){
+  balanceEl.textContent=balance.toLocaleString('ru-RU');
+  profileBalance.textContent=balance.toLocaleString('ru-RU');
+  clicksEl.textContent=clicks.toLocaleString('ru-RU');
+  powerEl.textContent='+'+power;
+  document.getElementById('upgradeLevel').textContent='Уровень: '+level;
+  document.getElementById('buy').textContent=cost+' ●';
+  document.getElementById('buy').disabled=balance<cost;
+}
+
+document.getElementById('coin').addEventListener('click',()=>{
+  balance+=power;
+  clicks++;
+  update();
+  if(navigator.vibrate) navigator.vibrate(15);
+});
+
+document.getElementById('buy').addEventListener('click',()=>{
+  if(balance<cost)return;
+  balance-=cost;
+  level++;
+  power++;
+  cost=Math.floor(cost*2.2);
+  update();
+});
+
+document.querySelectorAll('.nav button').forEach(button=>{
+  button.addEventListener('click',()=>{
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+    button.classList.add('active');
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(button.dataset.page).classList.add('active');
+  });
+});
+
+document.getElementById('searchButton').addEventListener('click',()=>{
+  const value=document.getElementById('searchInput').value.trim().replace(/^@/,'');
+  const result=document.getElementById('searchResult');
+  result.textContent=value
+    ? 'Поиск по серверу ещё не подключён. Этот username пока нельзя проверить.'
+    : 'Сначала введи Telegram username.';
+});
+
+update();
+</script>
+</body>
+  </html>
+  
